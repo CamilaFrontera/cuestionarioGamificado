@@ -93,6 +93,44 @@ p{margin:0;max-width:62ch}
 .ticket p{font-size:17px}
 .idle{font-family:var(--pixel);font-size:10px;color:var(--muted)}
 @media (prefers-reduced-motion:reduce){.blink{animation:none}.ans{transition:none}}
+
+/* ---------- Legibilidad y tamaño para el stand ---------- */
+:root{--muted:#D6CEF2}
+body{font-size:21px;line-height:1.55}
+body::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.07) 0 2px,transparent 2px 4px)}
+.wrap{max-width:980px;justify-content:center;gap:26px;padding-block:clamp(20px,5vh,56px)}
+.frame{align-items:center;text-align:center;gap:22px;padding:clamp(24px,5vw,48px)}
+.frame p{margin-inline:auto}
+.small{font-size:17px}
+.px.small{font-size:12px;letter-spacing:.06em;line-height:1.8}
+h1{font-size:clamp(30px,6.4vw,60px);line-height:1.4;text-shadow:3px 3px 0 var(--pink)}
+h2{font-size:clamp(30px,5.4vw,50px);line-height:1.18;letter-spacing:-.005em}
+h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,2.4vw,21px);letter-spacing:.1em;text-transform:uppercase}
+.hud{font-size:13px;letter-spacing:.04em;justify-content:center;gap:12px 28px}
+.levels span{height:12px}
+.btn{font-size:clamp(14px,2.4vw,18px);padding:22px 32px}
+.actions{justify-content:center}
+.answers{width:100%;gap:18px}
+.ans{font-size:clamp(20px,2.6vw,24px);line-height:1.3;padding:24px 22px 26px;min-height:110px;align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:10px}
+.ans .key{font-size:14px;padding-top:0}
+.plus{font-size:16px}
+.big{font-size:clamp(56px,12vw,104px)}
+.stats{width:100%;max-width:640px;text-align:left}
+.stat{font-size:19px;grid-template-columns:minmax(0,9.5em) 1fr}
+.stat .segs i{height:18px}
+.careers{width:100%;text-align:left}
+.career{padding:18px 20px}
+.career .n{font-size:20px}
+.career .pct{font-size:16px}
+.career .why{font-size:17px}
+.ticket{align-items:center;text-align:center;padding:26px 36px}
+.ticket p{font-size:20px;max-width:46ch}
+.ticket .num{font-size:13px;line-height:1.7}
+.idle{font-size:11px}
+.start{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%;padding-block:8px}
+.coin{font-size:clamp(13px,2vw,16px);color:var(--green)}
+.btn.go{font-size:clamp(18px,3.6vw,28px);padding:clamp(22px,3.4vw,32px) clamp(32px,6vw,64px);box-shadow:0 8px 0 #B38F14}
+.btn.go:active{transform:translateY(7px);box-shadow:0 1px 0 #B38F14}
 </style>
 </head>
 <body>
@@ -232,7 +270,7 @@ function inicio(){
       <span class="px small">ISFDyT N° 125 · NOCHE DE LOS INSTITUTOS</span>
       <h1>¿El software es lo tuyo?</h1>
       <p>12 niveles, 12 situaciones. No hay respuestas correctas ni incorrectas: elegí lo que harías vos de verdad, no lo que quedaría mejor. Al final descubrís tu clase de jugador y qué carreras del instituto van con vos.</p>
-      <div class="actions"><button class="btn" id="go">▶ Presioná start</button><span class="px small blink">INSERT COIN: GRATIS</span></div>
+      <div class="start"><span class="px blink coin">INSERT COIN: GRATIS</span><button class="btn go" id="go">▶ Presiona start</button></div>
       ${n?`<span class="px small">JUGADORES ESTA NOCHE: <span style="color:var(--yellow)">${pad(n,3)}</span></span>`:""}
     </div>`;
   bindMute();
