@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>¿El software es lo tuyo?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: pantalla de arcade (HUD arriba, una situación por nivel, 4 botones de colores). Tema único oscuro, a propósito. */
+:root{
+  --bg:#170D2E; --screen:#22164A; --ink:#F4F0FF; --muted:#B4A8DA; --line:#3D2E78;
+  --cyan:#3EE6FF; --yellow:#FFD23F; --pink:#FF4FA3; --green:#5CF28B; --dark:#0B0618;
+  --pixel:"Press Start 2P", "Courier New", monospace;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:19px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background-image:radial-gradient(ellipse at 50% 0%,#3A1F7A 0%,transparent 60%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
+.wrap{max-width:820px;margin:0 auto;padding-block:clamp(16px,4vh,44px);display:flex;flex-direction:column;gap:22px;min-height:100%;box-sizing:border-box}
+.px{font-family:var(--pixel);line-height:1.5;letter-spacing:.02em}
+h1,h2,h3{margin:0;text-wrap:balance}
+h1{font-family:var(--pixel);font-size:clamp(24px,5.6vw,48px);line-height:1.3;color:var(--yellow);text-shadow:4px 4px 0 var(--pink)}
+h2{font-family:var(--body);font-weight:700;font-size:clamp(26px,4.6vw,38px);line-height:1.2}
+h3{font-family:var(--pixel);font-size:clamp(14px,2.4vw,18px);color:var(--cyan);line-height:1.6}
+p{margin:0;max-width:62ch}
+.muted{color:var(--muted)}
+.small{font-size:15px;color:var(--muted)}
+
+.frame{background:var(--screen);padding:clamp(20px,4vw,34px);display:flex;flex-direction:column;gap:18px;
+  box-shadow:0 -4px 0 var(--line),0 4px 0 var(--line),-4px 0 0 var(--line),4px 0 0 var(--line),0 8px 0 4px var(--dark)}
+
+.hud{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px 18px;font-family:var(--pixel);font-size:11px;color:var(--muted)}
+.hud b{color:var(--yellow);font-weight:400;font-variant-numeric:tabular-nums}
+.hud button{font:inherit;color:var(--muted);background:none;border:0;cursor:pointer;padding:0}
+
+.btn{font-family:var(--pixel);font-size:clamp(13px,2.4vw,16px);line-height:1.4;border:0;cursor:pointer;padding:18px 22px;
+  background:var(--yellow);color:var(--dark);box-shadow:0 6px 0 #B38F14;text-transform:uppercase}
+.btn:active{transform:translateY(5px);box-shadow:0 1px 0 #B38F14}
+.btn.alt{background:var(--cyan);box-shadow:0 6px 0 #1C93A6}
+.btn.alt:active{box-shadow:0 1px 0 #1C93A6}
+:focus-visible{outline:4px solid var(--green);outline-offset:4px}
+.actions{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.blink{animation:blink 1s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+
+.levels{display:flex;gap:4px}
+.levels span{flex:1;height:10px;background:var(--line)}
+.levels span.done{background:var(--green)}
+.levels span.now{background:var(--yellow)}
+
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.answers{grid-template-columns:1fr}}
+.ans{font-family:var(--body);font-weight:700;font-size:18px;line-height:1.3;color:var(--dark);border:0;cursor:pointer;padding:16px 16px 18px;
+  display:flex;gap:12px;align-items:flex-start;text-align:left;min-width:0;transition:transform .08s}
+.ans .key{font-family:var(--pixel);font-size:13px;flex:none;padding-top:3px}
+.ans.a0{background:var(--green);box-shadow:0 6px 0 #2A9E55}
+.ans.a1{background:var(--yellow);box-shadow:0 6px 0 #B38F14}
+.ans.a2{background:var(--pink);box-shadow:0 6px 0 #A62668}
+.ans.a3{background:var(--cyan);box-shadow:0 6px 0 #1C93A6}
+.ans:active,.ans.picked{transform:translateY(5px);box-shadow:none}
+.ans:disabled:not(.picked){opacity:.45}
+.plus{font-family:var(--pixel);font-size:14px;color:var(--green);height:1.6em}
+
+.big{font-family:var(--pixel);font-size:clamp(44px,10vw,80px);line-height:1;color:var(--yellow);text-shadow:4px 4px 0 var(--pink);font-variant-numeric:tabular-nums}
+.stats{display:flex;flex-direction:column;gap:10px}
+.stat{display:grid;grid-template-columns:minmax(0,9em) 1fr;align-items:center;gap:12px;font-size:16px}
+.stat .segs{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.stat .segs i{height:14px;background:var(--line)}
+.stat .segs i.on{background:var(--cyan)}
+.stat.top .segs i.on{background:var(--yellow)}
+.stat.top .name{color:var(--yellow);font-weight:700}
+
+.careers{display:flex;flex-direction:column;gap:12px}
+.career{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;padding:14px 16px;background:var(--dark)}
+.career .n{font-weight:700}
+.career .pct{font-family:var(--pixel);font-size:14px;color:var(--cyan);font-variant-numeric:tabular-nums}
+.career .why{grid-column:1/-1;font-size:15px;color:var(--muted)}
+.career.ours{box-shadow:inset 0 0 0 3px var(--yellow)}
+.career.ours .pct{color:var(--yellow)}
+
+.ticket{background:var(--yellow);color:var(--dark);padding:22px 30px;display:flex;flex-direction:column;gap:10px;
+  -webkit-mask:radial-gradient(circle 12px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 12px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat;
+  mask:radial-gradient(circle 12px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 12px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat}
+.ticket.guest{background:var(--cyan)}
+.ticket .t{font-family:var(--pixel);font-size:clamp(14px,2.8vw,20px);line-height:1.5}
+.ticket .num{font-family:var(--pixel);font-size:12px}
+.ticket p{font-size:17px}
+.idle{font-family:var(--pixel);font-size:10px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.blink{animation:none}.ans{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app" aria-live="polite"></main>
+
+<script>
+/* Modelo de intereses de Holland (RIASEC), el que usa el O*NET Interest Profiler.
+   Cada opción de cada situación suma a un tipo, sin decirlo en pantalla.
+   Códigos de interés de O*NET: Software Developers IC · Kindergarten Teachers SA ·
+   Special Education Teachers SAI · Logisticians CEI · Registered Nurses SCI */
+const TIPOS={
+  R:{clase:"Realista",desc:"meter mano, arreglar y resolver con lo que hay"},
+  I:{clase:"Investigador",desc:"entender el porqué de las cosas y resolver problemas"},
+  A:{clase:"Artístico",desc:"crear, imaginar y hacer las cosas a tu manera"},
+  S:{clase:"Social",desc:"conectar con la gente y estar para los demás"},
+  E:{clase:"Emprendedor",desc:"liderar, convencer y mover al grupo"},
+  C:{clase:"Convencional",desc:"organizar, planificar y cuidar los detalles"}
+};
+const ORDEN="RIASEC".split("");
+const ROL_SOFT={
+  R:"Infraestructura y soporte técnico: que las redes, los servidores y las compus anden.",
+  I:"Programación y análisis de sistemas. En tercer año estamos rediseñando el sistema de gestión de este instituto.",
+  A:"Desarrollo web y diseño de interfaces: pantallas que se ven bien en la compu y en el celular.",
+  S:"Trabajo con usuarios: entrevistarlos y entender qué necesitan antes de programar.",
+  E:"Gestión de proyectos: planificar tareas, plazos, riesgos y coordinar al equipo.",
+  C:"Testing (QA) y bases de datos: encontrar los errores antes de que lleguen a la gente."
+};
+const CARRERAS=[
+  {id:"soft",n:"Desarrollo de Software",code:"IC",why:"Programar, diseñar sistemas, probarlos y organizar equipos."},
+  {id:"ini",n:"Educación Inicial",code:"SA",why:"Enseñar y acompañar a los más chicos, con mucha creatividad."},
+  {id:"esp",n:"Educación Especial",code:"SAI",why:"Acompañar a cada estudiante buscando la forma de enseñarle."},
+  {id:"log",n:"Logística",code:"CEI",why:"Organizar que productos y envíos lleguen a tiempo y en orden."},
+  {id:"enf",n:"Enfermería",code:"SCI",why:"Cuidar la salud de las personas con conocimiento y precisión."}
+];
+
+const SITUACIONES=[
+  {q:"Se corta la luz en tu casa un viernes a la noche. ¿Qué hacés primero?",o:[
+    ["Voy a revisar la térmica a ver si es algo nuestro","R"],
+    ["Me pregunto por qué pasó: ¿tormenta? ¿toda la cuadra?","I"],
+    ["Juntamos a todos y charlamos a la luz de las velas","S"],
+    ["Llamo a la empresa y averiguo cuándo vuelve","E"]]},
+  {q:"Le arman un cumpleaños sorpresa a una amiga. ¿Qué parte agarrás?",o:[
+    ["La temática y la decoración","A"],
+    ["Anotar quién pone plata y quién trae qué","C"],
+    ["Convencer a todos y que nadie se baje","E"],
+    ["Que la cumpleañera la pase bien y nadie quede de lado","S"]]},
+  {q:"En una serie, ¿con qué personaje te identificás más?",o:[
+    ["El detective que conecta las pistas","I"],
+    ["El que tiene un plan y la lista de lo que hay que llevar","C"],
+    ["El que arregla el auto con lo que encuentra","R"],
+    ["El líder que da el discurso antes de la batalla","E"]]},
+  {q:"Un amigo está bajoneado. Vos…",o:[
+    ["Lo escuchás todo lo que haga falta","S"],
+    ["Lo sacás a hacer algo: bici, pelota, lo que sea","R"],
+    ["Le mandás un meme, una canción o un dibujo","A"],
+    ["Tratás de entender bien qué pasó antes de opinar","I"]]},
+  {q:"Te regalan algo para armar: un mueble, un lego, un robot. ¿Y el manual?",o:[
+    ["Lo sigo paso por paso, sin saltearme nada","C"],
+    ["Lo ignoro y armo mirando las piezas","R"],
+    ["Lo armo y después lo cambio para que quede distinto","A"],
+    ["Lo armamos de a dos, que es más divertido","S"]]},
+  {q:"En el grupo de WhatsApp del curso, vos sos quien…",o:[
+    ["Avisa las fechas de entrega y pasa los apuntes","C"],
+    ["Propone planes y arma las juntadas","E"],
+    ["Manda los stickers y los memes","A"],
+    ["Contesta las dudas de los demás","S"]]},
+  {q:"Te ofrecen trabajos de verano. ¿Cuál agarrás?",o:[
+    ["Vender en un local con mucho movimiento","E"],
+    ["Ayudante en un taller de bicis o celulares","R"],
+    ["Ordenar el stock y las planillas de un negocio","C"],
+    ["Hacer las fotos y las redes de un emprendimiento","A"]]},
+  {q:"Faltó un profe y tenés dos horas libres. Lo más probable es que…",o:[
+    ["Adelante la tarea para no llevarla a casa","C"],
+    ["Me enganche con un video random y termine investigando el tema","I"],
+    ["Arme un torneo de truco con el curso","E"],
+    ["Termine charlando y ayudando a alguien con algo","S"]]},
+  {q:"El wifi de tu casa anda pésimo. ¿Qué hacés?",o:[
+    ["Busco un tutorial y lo arreglo yo","R"],
+    ["Primero quiero entender qué está fallando","I"],
+    ["Llamo a alguien que sepa y coordino que venga","E"],
+    ["Anoto a qué hora falla para reclamar con pruebas","C"]]},
+  {q:"¿Qué cumplido te gustaría más recibir?",o:[
+    ["«Sos re creativo»","A"],
+    ["«Sos muy inteligente»","I"],
+    ["«Con vos siempre se puede contar»","S"],
+    ["«Sos súper organizado»","C"]]},
+  {q:"Podés elegir un superpoder. ¿Cuál?",o:[
+    ["Arreglar cualquier cosa con solo tocarla","R"],
+    ["Saber lo que siente cada persona","S"],
+    ["Convencer a cualquiera de cualquier cosa","E"],
+    ["Recordar todo lo que leés","I"]]},
+  {q:"Un trabajo grupal viene mal y entregan en una semana. Vos…",o:[
+    ["Tomás el control y repartís tareas","E"],
+    ["Armás un cronograma día por día","C"],
+    ["Te ponés con la parte práctica: la maqueta, el armado","R"],
+    ["Le das una vuelta original a la idea","A"]]}
+];
+const APARICIONES=Object.fromEntries(ORDEN.map(t=>[t,SITUACIONES.reduce((s,x)=>s+x.o.filter(o=>o[1]===t).length,0)]));
+const LETRAS=["A","B","C","D"], UMBRAL=50;
+
+/* ---------- sonido 8-bit ---------- */
+let ctx=null, mute=false;
+function beep(f=660,d=.08,type="square",vol=.06){
+  if(mute) return;
+  try{ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f;
+    g.gain.setValueAtTime(vol,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+d);
+    o.connect(g).connect(ctx.destination);o.start();o.stop(ctx.currentTime+d);}catch(e){}
+}
+const melodia=(notas)=>notas.forEach((f,k)=>setTimeout(()=>beep(f,.12),k*110));
+
+/* ---------- contador de jugadores de la noche (solo en esta tablet) ---------- */
+function jugadores(sumar){
+  let n=0;
+  try{n=+localStorage.getItem("jugadores")||0; if(sumar){n++;localStorage.setItem("jugadores",n)}}catch(e){}
+  return n;
+}
+
+const app=document.getElementById("app");
+let i=0, elegidas=[], ordenOpc=[], pts=0, idleTick=null, idleReset=null;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pad=(n,l)=>String(n).padStart(l,"0");
+const mezclar=a=>{const b=[...a];for(let k=b.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[b[k],b[j]]=[b[j],b[k]]}return b};
+
+function hud(){
+  return `<div class="hud"><span>JUGADOR <b>1</b></span><span>NIVEL <b>${pad(Math.min(i+1,SITUACIONES.length),2)}/${SITUACIONES.length}</b></span><span>PTS <b>${pad(pts,6)}</b></span><button id="mute" aria-pressed="${mute}">${mute?"SONIDO: NO":"SONIDO: SÍ"}</button></div>`;
+}
+function bindMute(){const m=document.getElementById("mute"); if(m) m.onclick=()=>{mute=!mute; m.textContent=mute?"SONIDO: NO":"SONIDO: SÍ"; m.setAttribute("aria-pressed",mute)}}
+
+function inicio(){
+  clearInterval(idleTick); idleReset=null; i=0; elegidas=[]; pts=0;
+  ordenOpc=SITUACIONES.map(s=>mezclar(s.o));
+  const n=jugadores(false);
+  app.innerHTML=`
+    ${hud()}
+    <div class="frame">
+      <span class="px small">ISFDyT N° 125 · NOCHE DE LOS INSTITUTOS</span>
+      <h1>¿El software es lo tuyo?</h1>
+      <p>12 niveles, 12 situaciones. No hay respuestas correctas ni incorrectas: elegí lo que harías vos de verdad, no lo que quedaría mejor. Al final descubrís tu clase de jugador y qué carreras del instituto van con vos.</p>
+      <div class="actions"><button class="btn" id="go">▶ Presioná start</button><span class="px small blink">INSERT COIN: GRATIS</span></div>
+      ${n?`<span class="px small">JUGADORES ESTA NOCHE: <span style="color:var(--yellow)">${pad(n,3)}</span></span>`:""}
+    </div>`;
+  bindMute();
+  document.getElementById("go").onclick=()=>{melodia([523,659,784,1046]); setTimeout(pregunta,300)};
+}
+
+function pregunta(){
+  const s=SITUACIONES[i], ops=ordenOpc[i];
+  const lv=SITUACIONES.map((_,k)=>`<span class="${k<i?"done":k===i?"now":""}"></span>`).join("");
+  app.innerHTML=`
+    ${hud()}
+    <div class="levels" aria-hidden="true">${lv}</div>
+    <div class="frame">
+      <span class="px small">NIVEL ${pad(i+1,2)}</span>
+      <h2>${esc(s.q)}</h2>
+      <div class="answers">${ops.map((o,k)=>`<button class="ans a${k}" id="r${k}" data-t="${o[1]}"><span class="key">${LETRAS[k]}</span><span>${esc(o[0])}</span></button>`).join("")}</div>
+      <div class="plus" id="plus"></div>
+    </div>
+    <div class="actions">${i>0?'<button class="btn alt" id="back">◀ Nivel anterior</button>':""}</div>`;
+  bindMute();
+  app.querySelectorAll(".ans").forEach(b=>b.onclick=()=>elegir(b));
+  const back=document.getElementById("back"); if(back) back.onclick=()=>{i--; pts=Math.max(0,pts-100); beep(330); pregunta()};
+}
+function elegir(b){
+  if(b.disabled) return;
+  app.querySelectorAll(".ans").forEach(x=>x.disabled=true);
+  b.classList.add("picked");
+  elegidas[i]=b.dataset.t; pts+=100;
+  document.getElementById("plus").textContent="+100";
+  beep([660,740,880,990][+b.id.slice(1)]);
+  setTimeout(()=>{i++; i<SITUACIONES.length?pregunta():resultado()},320);
+}
+document.addEventListener("keydown",e=>{
+  const k=["1","2","3","4"].indexOf(e.key)>=0?["1","2","3","4"].indexOf(e.key):["a","b","c","d"].indexOf(e.key.toLowerCase());
+  if(k>=0){const b=document.getElementById("r"+k); if(b) elegir(b)}
+});
+
+function compat(n,code){
+  const w=code.length===3?[3,2,1]:[3,2];
+  return Math.round(code.split("").reduce((s,l,k)=>s+w[k]*n[l],0)/w.reduce((a,b)=>a+b,0)*100);
+}
+
+function resultado(){
+  const raw=Object.fromEntries(ORDEN.map(t=>[t,0]));
+  elegidas.slice(0,SITUACIONES.length).forEach(t=>raw[t]++);
+  /* puntaje relativo: cuántas veces elegiste cada tipo sobre cuántas veces apareció, comparado con tu tipo más fuerte */
+  const rel=Object.fromEntries(ORDEN.map(t=>[t,raw[t]/APARICIONES[t]]));
+  const maxRel=Math.max(...Object.values(rel))||1;
+  const n=Object.fromEntries(ORDEN.map(t=>[t,rel[t]/maxRel]));
+  const rank=[...ORDEN].sort((a,b)=>n[b]-n[a]||ORDEN.indexOf(a)-ORDEN.indexOf(b));
+  const top=rank[0], codigo=rank.slice(0,3).join("");
+  const lista=CARRERAS.map(c=>({...c,p:compat(n,c.code)}));
+  const soft=lista[0];
+  const otras=lista.slice(1).sort((a,b)=>b.p-a.p);
+  const paso=soft.p>=UMBRAL;
+  const nro=jugadores(true);
+  melodia(paso?[523,659,784,1046,1318]:[784,659,523,659,784]);
+
+  app.innerHTML=`
+    <div class="hud"><span>JUGADOR <b>1</b></span><span>PTS <b>${pad(pts+soft.p*10,6)}</b></span><span>JUGADOR N° <b>${pad(nro,3)}</b></span><button id="mute" aria-pressed="${mute}">${mute?"SONIDO: NO":"SONIDO: SÍ"}</button></div>
+    <div class="frame">
+      <span class="px blink" style="color:var(--green);font-size:14px">¡NIVEL COMPLETADO!</span>
+      <h3>TU CLASE DE JUGADOR</h3>
+      <h2>${esc(TIPOS[top].clase)}</h2>
+      <p>Lo tuyo es ${esc(TIPOS[top].desc)}. <span class="muted">Tu código de intereses es <strong>${codigo}</strong>.</span></p>
+      <div class="stats">${ORDEN.map(t=>{const on=Math.round(n[t]*8);return `
+        <div class="stat ${t===top?"top":""}"><span class="name">${TIPOS[t].clase}</span>
+          <span class="segs" aria-label="${on} de 8">${Array.from({length:8},(_,k)=>`<i class="${k<on?"on":""}"></i>`).join("")}</span></div>`}).join("")}</div>
+    </div>
+
+    <div class="frame">
+      <h3>COMPATIBILIDAD CON DESARROLLO DE SOFTWARE</h3>
+      <span class="big">${soft.p}%</span>
+      <p>${paso?"Tus intereses se parecen a los de quienes trabajan desarrollando software.":"No es tu perfil más fuerte, pero en un equipo de software hay lugar para gente muy distinta."}</p>
+      <p><strong>Tu lugar en el equipo:</strong> ${esc(ROL_SOFT[top])}</p>
+    </div>
+
+    <div class="ticket ${paso?"":"guest"}" role="note">
+      <span class="t">${paso?"★ PASE AL SALÓN DESBLOQUEADO ★":"PASE DE INVITADO AL SALÓN"}</span>
+      <span class="num">JUGADOR N° ${pad(nro,3)} · CLASE ${TIPOS[top].clase.toUpperCase()}</span>
+      <p>${paso?"Mostrale esta pantalla a alguien del stand: te esperamos adentro para probar lo que hacemos y llevarte tu premio.":"Igual estás invitado a pasar: vení a ver lo que hacemos y llevate tu premio. Nadie se va con las manos vacías."}</p>
+    </div>
+
+    <div class="frame">
+      <h3>OTRAS MISIONES EN EL INSTITUTO</h3>
+      <p class="small">Tu compatibilidad con cada carrera, según el mismo modelo de intereses.</p>
+      <div class="careers">
+        ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${c.p}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
+      </div>
+      ${otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
+      <p class="small">Juego orientativo basado en el modelo de intereses de John Holland y en los códigos de ocupaciones de O*NET. Para una orientación vocacional completa, consultá con un profesional.</p>
+    </div>
+
+    <div class="actions"><button class="btn" id="again">▶ Siguiente jugador</button><span class="idle" id="idle"></span></div>`;
+  bindMute();
+  document.getElementById("again").onclick=()=>{beep(784);inicio()};
+  armarIdle();
+}
+
+/* En el stand: si nadie toca la pantalla del resultado, vuelve sola al inicio */
+function armarIdle(){
+  clearInterval(idleTick); let resta=90;
+  const pinta=()=>{const el=document.getElementById("idle"); if(el) el.textContent=`VUELVE AL INICIO EN ${resta}s`};
+  pinta();
+  idleTick=setInterval(()=>{resta--; pinta(); if(resta<=0) inicio()},1000);
+  idleReset=()=>{resta=90; pinta()};
+}
+document.addEventListener("pointerdown",()=>{if(idleReset) idleReset()});
+
+inicio();
+</script>
+</body>
+</html>
