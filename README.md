@@ -7,7 +7,7 @@ Los estudiantes de sexto año responden 12 situaciones cotidianas y reciben:
 - su **clase de jugador** (tipo de interés dominante) y su código de 3 letras,
 - su **compatibilidad con Desarrollo de Software** y el rol que podrían ocupar en un equipo,
 - un **pase al salón** (o pase de invitado, si la compatibilidad es baja),
-- su compatibilidad con las otras carreras del instituto: Educación Inicial, Educación Especial, Logística y Enfermería.
+- su compatibilidad con las otras carreras del instituto: Educación Inicial, Educación Primaria, Educación Especial, Logística, Enfermería y Seguridad e Higiene.
 
 ## Cómo funciona
 
@@ -21,9 +21,11 @@ El test se basa en el modelo de intereses de John Holland (RIASEC: Realista, Inv
 |---|---|---|
 | Desarrollo de Software | Software Developers (15-1252.00) | IC |
 | Educación Inicial | Kindergarten Teachers (25-2012.00) | SA |
+| Educación Primaria | Elementary School Teachers (25-2021.00) | S |
 | Educación Especial | Special Education Teachers (25-2057.00) | SAI |
 | Logística | Logisticians (13-1081.00) | CEI |
 | Enfermería | Registered Nurses (29-1141.00) | SCI |
+| Seguridad e Higiene | Occupational Health and Safety Specialists (19-5011.00) | ICR |
 
 Con 50% o más de compatibilidad con Software se muestra el pase al salón desbloqueado.
 
