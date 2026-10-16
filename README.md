@@ -15,7 +15,7 @@ El test se basa en el modelo de intereses de John Holland (RIASEC: Realista, Inv
 
 - Cada opción de cada situación suma a un tipo de interés, sin mostrarlo en pantalla. El orden de las opciones se mezcla en cada partida.
 - El puntaje de cada tipo es la proporción de veces que se eligió sobre las veces que apareció, relativo al tipo más fuerte.
-- La compatibilidad con cada carrera se calcula con el código de interés de O*NET de la ocupación asociada, ponderando la primera letra ×3, la segunda ×2 y la tercera ×1:
+- La compatibilidad con cada carrera es la **correlación** entre el perfil del jugador (sus 6 tipos) y el perfil de la carrera, armado con el código de interés de O*NET de la ocupación asociada (primera letra peso 3, segunda 2, tercera 1, el resto 0). Compara la forma del perfil: si alguien se destaca justo en lo que la carrera no pide, la compatibilidad da baja. La correlación (de −1 a 1) se lleva a una escala de 0 a 100%:
 
 | Carrera | Ocupación O*NET | Código |
 |---|---|---|
