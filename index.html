@@ -311,9 +311,21 @@ document.addEventListener("keydown",e=>{
   if(k>=0){const b=document.getElementById("r"+k); if(b) elegir(b)}
 });
 
+/* Compatibilidad = correlación entre tu perfil (6 tipos) y el perfil de la carrera
+   (letras de su código O*NET con peso 3-2-1, el resto en 0). Compara la forma del perfil:
+   si te destacás justo en lo que la carrera no pide, da bajo. */
+function corr(a,b){
+  const ma=a.reduce((s,x)=>s+x,0)/a.length, mb=b.reduce((s,x)=>s+x,0)/b.length;
+  let num=0,da=0,db=0;
+  a.forEach((x,k)=>{num+=(x-ma)*(b[k]-mb); da+=(x-ma)**2; db+=(b[k]-mb)**2});
+  return da&&db?num/Math.sqrt(da*db):0;
+}
 function compat(n,code){
-  const w=[3,2,1].slice(0,code.length);
-  return Math.round(code.split("").reduce((s,l,k)=>s+w[k]*n[l],0)/w.reduce((a,b)=>a+b,0)*100);
+  const w=[3,2,1];
+  const u=ORDEN.map(t=>n[t]);
+  const v=ORDEN.map(t=>{const k=code.indexOf(t);return k<0?0:w[k]});
+  const r=corr(u,v);
+  return Math.max(0,Math.min(100,Math.round((r+.25)/1.25*100)));
 }
 
 function resultado(){
@@ -363,7 +375,7 @@ function resultado(){
       <div class="careers">
         ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${c.p}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
       </div>
-      ${otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
+      ${Math.max(soft.p,otras[0].p)<40?`<p>Ninguna carrera del instituto encaja del todo con tu perfil, y eso también es un dato útil: tus intereses van más por lo <strong>${esc(TIPOS[top].clase.toLowerCase())}</strong>. Charlá con nosotros o con orientación vocacional para ver qué opciones hay.</p>`:otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
       <p class="small">Juego orientativo basado en el modelo de intereses de John Holland y en los códigos de ocupaciones de O*NET. Para una orientación vocacional completa, consultá con un profesional.</p>
     </div>
 
