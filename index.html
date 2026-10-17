@@ -149,6 +149,27 @@ h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,2.4vw,21px);lett
 .btn.dl{background:var(--green);box-shadow:0 6px 0 #2E9A53}
 .btn.dl:active{box-shadow:0 1px 0 #2E9A53}
 .dlmsg{font-family:var(--pixel);font-size:11px;color:var(--green);min-height:1.7em;width:100%;text-align:center}
+/* ---------- ficha de la carrera ---------- */
+.btn.info{background:var(--dark);color:var(--yellow);box-shadow:0 6px 0 #000;margin-top:6px}
+.btn.info:active{box-shadow:0 1px 0 #000}
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%}
+@media (max-width:560px){.chips{grid-template-columns:repeat(2,1fr)}}
+.chips span{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px 8px;background:var(--dark);box-shadow:inset 0 0 0 3px var(--line);font-family:var(--pixel);font-size:11px;color:var(--muted)}
+.chips b{font-size:clamp(24px,4vw,34px);font-weight:400;color:var(--yellow);text-shadow:3px 3px 0 var(--pink)}
+.skills{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;width:100%;text-align:left}
+.skills span{font-size:19px;line-height:1.4;padding:14px 16px 14px 44px;background:var(--dark);position:relative}
+.skills span::before{content:"▶";position:absolute;left:16px;top:16px;font-size:14px;color:var(--green)}
+.nivel{width:100%;text-align:left}
+.nivel-h{display:flex;justify-content:space-between;gap:12px;background:var(--cyan);color:var(--dark);padding:12px 16px;font-size:12px}
+.materias{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.materias li{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:12px 16px;background:var(--dark)}
+.materias li.st{box-shadow:inset 4px 0 0 var(--yellow)}
+.materias li.tuya{box-shadow:inset 4px 0 0 var(--pink)}
+.materias li.st.tuya{box-shadow:inset 4px 0 0 var(--yellow),inset 8px 0 0 var(--pink)}
+.materias .mn{font-weight:700;font-size:19px}
+.materias .mk{margin-right:8px}
+.materias .mh{font-family:var(--pixel);font-size:11px;color:var(--cyan);padding-top:5px;white-space:nowrap}
+.materias .md{grid-column:1/-1;font-size:16px;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -163,7 +184,7 @@ h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,2.4vw,21px);lett
    Elementary School Teachers S · Occupational Health and Safety Specialists ICR */
 /* Carreras FUERA del instituto, solo como ideas para explorar según los dos intereses más fuertes */
 const EXTERNAS={
-  R:["Mecánica o electrónica","Maestro mayor de obras","Agronomía","Técnico en energías renovables"],
+  R:["Mecánica o electrónica","Maestro mayor de obras","Veterinaria","Técnico en energías renovables"],
   I:["Medicina","Biología o química","Ingeniería","Bioquímica"],
   A:["Diseño gráfico","Arquitectura","Cine y producción audiovisual","Música"],
   S:["Psicología","Profesorado de Educación Física","Trabajo social","Kinesiología"],
@@ -180,21 +201,23 @@ const TIPOS={
 };
 const ORDEN="RIASEC".split("");
 const ROL_SOFT={
-  R:"Infraestructura y soporte técnico: que las redes, los servidores y las compus anden.",
-  I:"Programación y análisis de sistemas. En tercer año estamos rediseñando el sistema de gestión de este instituto.",
-  A:"Desarrollo web y diseño de interfaces: pantallas que se ven bien en la compu y en el celular.",
-  S:"Trabajo con usuarios: entrevistarlos y entender qué necesitan antes de programar.",
-  E:"Gestión de proyectos: planificar tareas, plazos, riesgos y coordinar al equipo.",
-  C:"Testing (QA) y bases de datos: encontrar los errores antes de que lleguen a la gente."
+  R:"Infraestructura: que las redes, los servidores y las compus anden. En primer año hay Laboratorio de Hardware, Redes y Sistemas Operativos.",
+  I:"Programación y análisis: resolver problemas con código, encontrar por qué algo falla y corregirlo.",
+  A:"Diseño web y apps: pantallas que se ven bien y son fáciles de usar, en la compu y en el celular.",
+  S:"Trabajo con usuarios y clientes: entender qué necesitan antes de programar. En las Prácticas Profesionalizantes se hacen proyectos para gente real.",
+  E:"Liderar proyectos: planificar etapas, tiempos y costos, y coordinar al equipo. Muchos terminan armando su propia empresa.",
+  C:"Testing (QA), bases de datos y documentación: que todo esté ordenado y los errores se encuentren antes de que lleguen a la gente."
 };
 const CARRERAS=[
-  {id:"soft",n:"Desarrollo de Software",code:"IC",why:"Programar, diseñar sistemas, probarlos y organizar equipos."},
-  {id:"ini",n:"Educación Inicial",code:"SA",why:"Enseñar y acompañar a los más chicos, con mucha creatividad."},
-  {id:"pri",n:"Educación Primaria",code:"S",why:"Enseñar a leer, escribir y pensar, y acompañar a un grado entero."},
-  {id:"esp",n:"Educación Especial",code:"SAI",why:"Acompañar a cada estudiante buscando la forma de enseñarle."},
-  {id:"log",n:"Logística",code:"CEI",why:"Organizar que productos y envíos lleguen a tiempo y en orden."},
-  {id:"enf",n:"Enfermería",code:"SCI",why:"Cuidar la salud de las personas con conocimiento y precisión."},
-  {id:"seg",n:"Seguridad e Higiene",code:"ICR",why:"Detectar riesgos y cuidar que los lugares de trabajo sean seguros."}
+  {id:"soft",n:"Desarrollo de Software",code:"IC",why:"Diseñar, programar y probar sistemas trabajando en equipo por proyectos. 3 años."},
+  {id:"ini",n:"Educación Inicial",code:"SA",why:"Profesorado para enseñar y acompañar a los más chicos en el jardín. 4 años."},
+  {id:"pri",n:"Educación Primaria",code:"S",why:"Profesorado para enseñar a leer, escribir y pensar a un grado entero. 4 años."},
+  {id:"esp",n:"Educación Especial",code:"SAI",why:"Profesorado para buscar la forma de enseñarle a cada estudiante. 4 años."},
+  {id:"biot",n:"Biotecnología",code:"CRI",why:"Trabajar en laboratorio con seres vivos para producir alimentos, medicamentos y más."},
+  {id:"agro",n:"Producción Agrícola Ganadera",code:"ERC",why:"Gestionar un campo: cultivos, animales, máquinas y ventas, cuidando el suelo. 3 años."},
+  {id:"log",n:"Logística",code:"CEI",why:"Organizar el recorrido de productos y servicios, del proveedor al cliente. 3 años."},
+  {id:"enf",n:"Enfermería",code:"SCI",why:"Cuidar la salud de personas, familias y comunidades, en hospitales y en el barrio. 3 años."},
+  {id:"seg",n:"Seguridad e Higiene",code:"ICR",why:"Inspeccionar lugares de trabajo, detectar riesgos y armar planes de evacuación. 3 años."}
 ];
 
 const SITUACIONES=[
@@ -273,6 +296,105 @@ function beep(f=660,d=.08,type="square",vol=.06){
 }
 const melodia=(notas)=>notas.forEach((f,k)=>setTimeout(()=>beep(f,.12),k*110));
 
+/* ---------- ficha de la carrera: Tecnicatura Superior en Desarrollo de Software, Res. 5847/19 DGCyE ----------
+   st = lo que mostramos en el stand · t = tipos de interés con los que más se relaciona la materia */
+const PLAN=[
+  {nivel:"1.er AÑO",hs:576,m:[
+    ["Introducción a la Programación",96,"Algoritmos y tu primer lenguaje: escribir código que se entienda.",{t:"I"}],
+    ["Administración y Gestión de Base de Datos",96,"Diseñar dónde y cómo se guarda la información.",{t:"C"}],
+    ["Análisis Matemático",64,"Modelos matemáticos para analizar y resolver problemas.",{t:"I"}],
+    ["Introducción a las Redes de Datos",64,"Cómo viaja la información de una compu a otra.",{t:"R"}],
+    ["Sistemas Digitales",64,"Cómo representa y procesa los datos una computadora.",{t:"R"}],
+    ["Sistemas Operativos",64,"El programa que hace funcionar a todos los demás.",{t:"R"}],
+    ["Laboratorio de Hardware",64,"Los componentes físicos: diagnosticar y prevenir fallas.",{t:"R"}],
+    ["Prácticas Profesionalizantes I",64,"Primer contacto con lugares de trabajo reales.",{t:"SE"}]]},
+  {nivel:"2.º AÑO",hs:672,m:[
+    ["Desarrollo de Sistemas Orientado a Objetos",128,"Construir un sistema completo pensando en objetos.",{t:"I"}],
+    ["Programación",96,"Resolver problemas más grandes con algoritmos y código.",{t:"I"}],
+    ["Desarrollo de Aplicativos Móviles",96,"Apps para el celular, seguras y fáciles de usar.",{t:"A"}],
+    ["Diseño Web",64,"Sitios web: interfaz, experiencia de usuario y navegación.",{t:"A"}],
+    ["Álgebra y Lógica",64,"Razonar paso a paso, como un programa.",{t:"I"}],
+    ["Estadística y Probabilidades",64,"Analizar datos para tomar decisiones.",{t:"C"}],
+    ["Inglés I",64,"Leer documentación técnica. Da certificado de nivel A2.",{t:""}],
+    ["Prácticas Profesionalizantes II",96,"Proyecto: sistemas que ayudan a tomar decisiones.",{t:"SE"}]]},
+  {nivel:"3.er AÑO",hs:576,m:[
+    ["Desarrollo de Sistemas Web",128,"Sistemas web completos y seguros, de punta a punta.",{t:"A",st:1}],
+    ["Ingeniería de Software",128,"Todo el recorrido: de lo que necesita el usuario a ponerlo en marcha.",{t:"S",st:1}],
+    ["Prácticas Profesionalizantes III",128,"Proyecto integrador con sistemas en la nube, para un problema real.",{t:"SE",st:1}],
+    ["Metodología de Pruebas de Sistemas",64,"Planificar y hacer pruebas para lograr software de calidad.",{t:"C"}],
+    ["Gestión de Proyectos",64,"Planificar etapas, tiempos y costos de un proyecto.",{t:"E"}],
+    ["Inglés II",64,"Inglés técnico. Da certificado de nivel B1.",{t:""}]]}
+];
+const TOTAL_MATERIAS=PLAN.reduce((s,a)=>s+a.m.length,0);
+
+function fichaCarrera(top){
+  window.scrollTo(0,0);
+  const tuyas=PLAN.flatMap(a=>a.m).filter(m=>m[3].t.includes(top)).length;
+  app.innerHTML=`
+    <div class="hud"><span>ARCHIVO <b>DESBLOQUEADO</b></span><button id="mute" aria-pressed="${mute}">${mute?"SONIDO: NO":"SONIDO: SÍ"}</button></div>
+    <div class="frame">
+      <span class="px small" style="color:var(--green)">★ INFO DE LA MISIÓN ★</span>
+      <h2>Tecnicatura Superior en Desarrollo de Software</h2>
+      <div class="chips">
+        <span><b>3</b>AÑOS</span><span><b>${TOTAL_MATERIAS}</b>MATERIAS</span><span><b>1824</b>HORAS</span><span><b>3</b>PRÁCTICAS</span>
+      </div>
+      <p>Al terminar recibís el título de <strong>Desarrollador de Software</strong>, un título oficial de la Provincia de Buenos Aires.</p>
+    </div>
+
+    <div class="frame">
+      <h3>QUÉ VAS A PODER HACER</h3>
+      <div class="skills">
+        <span>Diseñar un sistema a partir de lo que pide el cliente</span>
+        <span>Programar, reutilizando código que ya existe</span>
+        <span>Probarlo y encontrar los errores</span>
+        <span>Revisar código, propio o de otros, y arreglarlo</span>
+        <span>Documentar lo que hiciste para que otros lo entiendan</span>
+        <span>Organizar tus tareas dentro de un equipo</span>
+      </div>
+    </div>
+
+    <div class="frame">
+      <h3>EL MAPA DE NIVELES</h3>
+      <p class="small"><span style="color:var(--yellow)">★</span> lo que te mostramos hoy en el stand · <span style="color:var(--pink)">◆</span> va con tu clase: <strong>${esc(TIPOS[top].clase)}</strong> (${tuyas} materia${tuyas===1?"":"s"})</p>
+      ${PLAN.map((a,k)=>`
+        <div class="nivel">
+          <div class="nivel-h"><span class="px">NIVEL ${k+1} · ${a.nivel}</span><span class="px">${a.hs} HS</span></div>
+          <ul class="materias">${a.m.map(m=>`
+            <li class="${m[3].st?"st":""} ${m[3].t.includes(top)?"tuya":""}">
+              <span class="mn">${m[3].st?'<span class="mk" style="color:var(--yellow)">★</span>':""}${m[3].t.includes(top)?'<span class="mk" style="color:var(--pink)">◆</span>':""}${esc(m[0])}</span>
+              <span class="mh">${m[1]} HS</span>
+              <span class="md">${esc(m[2])}</span>
+            </li>`).join("")}</ul>
+        </div>`).join("")}
+    </div>
+
+    <div class="frame">
+      <h3>DÓNDE SE TRABAJA</h3>
+      <div class="skills">
+        <span>Empresas que desarrollan software para clientes de acá o del exterior</span>
+        <span>El área de sistemas de cualquier organización: comercios, industrias, el Estado</span>
+        <span>Por tu cuenta, haciendo sistemas para negocios chicos</span>
+        <span>Tu propia empresa, asociándote con otros desarrolladores</span>
+      </div>
+      <p class="small">En un equipo de software trabajan juntos arquitectos, desarrolladores, testers, analistas y diseñadores. Con experiencia, un desarrollador puede pasar a liderar equipos.</p>
+    </div>
+
+    <div class="frame">
+      <h3>PARA ENTRAR</h3>
+      <div class="skills">
+        <span>Tener el secundario completo. Si tenés más de 25 años y no lo terminaste, hay otra forma de inscribirte.</span>
+        <span><strong>¿Venís de una escuela técnica?</strong> Con el título de Técnico en Programación o en Informática Profesional y Personal, tenés el 1.er año aprobado y empezás directo en 2.º.</span>
+      </div>
+      <p class="small">Las carreras que abren el año que viene todavía no están confirmadas: consultá en el instituto antes de inscribirte.</p>
+      <p class="small">Fuente: Diseño curricular de la Tecnicatura Superior en Desarrollo de Software, Res. 5847/19 de la Dirección General de Cultura y Educación.</p>
+    </div>
+
+    <div class="actions"><button class="btn alt" id="volver">◀ Volver a mi resultado</button><span class="idle" id="idle"></span></div>`;
+  bindMute();
+  document.getElementById("volver").onclick=()=>{beep(660); pantallaResultado({...ULTIMO_D,silencio:true}); const t=app.querySelector(".ticket"); if(t) t.scrollIntoView({block:"center"});};
+  if(!PERSONAL) armarIdle();
+}
+
 /* ---------- contador de jugadores de la noche (solo en esta tablet) ---------- */
 function jugadores(sumar){
   let n=0;
@@ -295,15 +417,18 @@ function bindMute(){const m=document.getElementById("mute"); if(m) m.onclick=()=
    Stand (sin #): la PC del stand muestra el QR y también se puede jugar ahí.
    #jugar: se abrió desde el QR en un celular. #r=…: resultado llevado al celular desde la PC. */
 const URL_TEST="https://camilafrontera.github.io/cuestionarioGamificado/";
+/* VERSION va en los links de los QR: si un celular tiene guardada una versión vieja, la fuerza a cargar la nueva.
+   Cambiarlo cada vez que se sube un index.html nuevo. */
+const VERSION="14";
 function baseURL(){
-  try{ if(/^https?:$/.test(location.protocol) && !/claude/i.test(location.hostname)) return location.origin+location.pathname; }catch(e){}
-  return URL_TEST;
+  try{ if(/^https?:$/.test(location.protocol) && !/claude/i.test(location.hostname)) return location.origin+location.pathname+"?v="+VERSION; }catch(e){}
+  return URL_TEST+"?v="+VERSION;
 }
 const PERSONAL=/^#(jugar|r=)/.test(location.hash);
 function qr(el,texto,tam){
   if(!el) return;
   try{ new QRCode(el,{text:texto,width:tam,height:tam,colorDark:"#0B0618",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); el.title=""; }
-  catch(e){ el.innerHTML=`<span class="qrfail">Sin conexión para dibujar el QR. Entrá a:<br>${esc(texto.replace(/^https?:\/\//,"").replace(/#.*$/,""))}</span>`; }
+  catch(e){ el.innerHTML=`<span class="qrfail">Sin conexión para dibujar el QR. Entrá a:<br>${esc(texto.replace(/^https?:\/\//,"").replace(/[?#].*$/,""))}</span>`; }
 }
 
 function inicio(){
@@ -311,7 +436,7 @@ function inicio(){
   ordenOpc=SITUACIONES.map(s=>mezclar(s.o));
   const n=PERSONAL?0:jugadores(false);
   const link=baseURL()+"#jugar";
-  const corto=link.replace(/^https?:\/\//,"").replace(/#.*$/,"").replace(/\/$/,"");
+  const corto=link.replace(/^https?:\/\//,"").replace(/[?#].*$/,"").replace(/\/$/,"");
   app.innerHTML=`
     ${hud()}
     <div class="frame">
@@ -411,12 +536,12 @@ function calcular(n){
 }
 const pct=p=>p<5?"<5":String(p);
 const fechaTxt=f=>f&&f.length===8?`${f.slice(6)}/${f.slice(4,6)}/${f.slice(0,4)}`:"";
-let ULTIMO=null;
+let ULTIMO=null, ULTIMO_D=null;
 
 function pantallaResultado(d){
   const {n,nro}=d, R=calcular(n), {rank,top,codigo,soft,otras,sec,ext,paso}=R;
-  ULTIMO={...d,...R};
-  if(!d.link) melodia(paso?[523,659,784,1046,1318]:[784,659,523,659,784]);
+  ULTIMO={...d,...R}; ULTIMO_D=d;
+  if(!d.link&&!d.silencio) melodia(paso?[523,659,784,1046,1318]:[784,659,523,659,784]);
   const total=d.pts+soft.p*10;
   const linkR=baseURL()+"#r="+ORDEN.map(t=>Math.round(n[t]*100)).join(".")+"-"+nro+"-"+total+"-"+d.fecha;
   const kiosco=!PERSONAL;
@@ -444,11 +569,12 @@ function pantallaResultado(d){
       <span class="t">${paso?"★ PASE AL SALÓN DESBLOQUEADO ★":"PASE DE INVITADO AL SALÓN"}</span>
       <span class="num">${nro?`JUGADOR N° ${pad(nro,3)} · `:""}CLASE ${TIPOS[top].clase.toUpperCase()}</span>
       <p>${paso?"Mostrale esta pantalla a alguien del stand: te esperamos adentro para probar lo que hacemos y llevarte tu premio.":"Igual estás invitado a pasar: vení a ver lo que hacemos y llevate tu premio. Nadie se va con las manos vacías."}</p>
+      ${paso?`<button class="btn info" id="info">▶ Ver la carrera: materias y más</button>`:""}
     </div>
 
     <div class="frame">
       <h3>OTRAS MISIONES EN EL INSTITUTO</h3>
-      <p class="small">Tu compatibilidad con cada carrera, según el mismo modelo de intereses.</p>
+      <p class="small">Tu compatibilidad con cada carrera que se cursa este año en el instituto, según el mismo modelo de intereses. Qué carreras abren el año que viene todavía no está confirmado: consultalo en el instituto.</p>
       <div class="careers">
         ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${esc(pct(c.p))}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
       </div>
@@ -476,6 +602,7 @@ function pantallaResultado(d){
   bindMute();
   if(kiosco) qr(document.getElementById("qrRes"),linkR,190);
   document.getElementById("dl").onclick=descargar;
+  const bi=document.getElementById("info"); if(bi) bi.onclick=()=>{melodia([660,880,1046]); fichaCarrera(top)};
   document.getElementById("again").onclick=()=>{
     beep(784);
     if(d.link){ try{history.replaceState(null,"",location.pathname+location.search+"#jugar")}catch(e){} }
