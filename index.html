@@ -83,6 +83,8 @@ p{margin:0;max-width:62ch}
 .career .why{grid-column:1/-1;font-size:15px;color:var(--muted)}
 .career.ours{box-shadow:inset 0 0 0 3px var(--yellow)}
 .career.ours .pct{color:var(--yellow)}
+.ext{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.ext span{font-weight:700;font-size:18px;padding:10px 14px;background:var(--dark);box-shadow:inset 0 0 0 2px var(--line)}
 
 .ticket{background:var(--yellow);color:var(--dark);padding:22px 30px;display:flex;flex-direction:column;gap:10px;
   -webkit-mask:radial-gradient(circle 12px at 0 50%,transparent 98%,#000) left/51% 100% no-repeat,radial-gradient(circle 12px at 100% 50%,transparent 98%,#000) right/51% 100% no-repeat;
@@ -142,6 +144,15 @@ h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,2.4vw,21px);lett
    Códigos de interés de O*NET: Software Developers IC · Kindergarten Teachers SA ·
    Special Education Teachers SAI · Logisticians CEI · Registered Nurses SCI ·
    Elementary School Teachers S · Occupational Health and Safety Specialists ICR */
+/* Carreras FUERA del instituto, solo como ideas para explorar según los dos intereses más fuertes */
+const EXTERNAS={
+  R:["Mecánica o electrónica","Maestro mayor de obras","Agronomía","Técnico en energías renovables"],
+  I:["Medicina","Biología o química","Ingeniería","Bioquímica"],
+  A:["Diseño gráfico","Arquitectura","Cine y producción audiovisual","Música"],
+  S:["Psicología","Profesorado de Educación Física","Trabajo social","Kinesiología"],
+  E:["Administración de empresas","Marketing","Abogacía","Turismo y hotelería"],
+  C:["Contador público","Administración pública","Bibliotecología","Analista administrativo-contable"]
+};
 const TIPOS={
   R:{clase:"Realista",desc:"meter mano, arreglar y resolver con lo que hay"},
   I:{clase:"Investigador",desc:"entender el porqué de las cosas y resolver problemas"},
@@ -358,7 +369,7 @@ function resultado(){
 
     <div class="frame">
       <h3>COMPATIBILIDAD CON DESARROLLO DE SOFTWARE</h3>
-      <span class="big">${soft.p}%</span>
+      <span class="big">${soft.p<5?"&lt;5":soft.p}%</span>
       <p>${paso?"Tus intereses se parecen a los de quienes trabajan desarrollando software.":"No es tu perfil más fuerte, pero en un equipo de software hay lugar para gente muy distinta."}</p>
       <p><strong>Tu lugar en el equipo:</strong> ${esc(ROL_SOFT[top])}</p>
     </div>
@@ -373,10 +384,18 @@ function resultado(){
       <h3>OTRAS MISIONES EN EL INSTITUTO</h3>
       <p class="small">Tu compatibilidad con cada carrera, según el mismo modelo de intereses.</p>
       <div class="careers">
-        ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${c.p}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
+        ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${c.p<5?"&lt;5":c.p}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
       </div>
-      ${Math.max(soft.p,otras[0].p)<40?`<p>Ninguna carrera del instituto encaja del todo con tu perfil, y eso también es un dato útil: tus intereses van más por lo <strong>${esc(TIPOS[top].clase.toLowerCase())}</strong>. Charlá con nosotros o con orientación vocacional para ver qué opciones hay.</p>`:otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
-      <p class="small">Juego orientativo basado en el modelo de intereses de John Holland y en los códigos de ocupaciones de O*NET. Para una orientación vocacional completa, consultá con un profesional.</p>
+      ${Math.max(soft.p,otras[0].p)<40?`<p>Ninguna carrera del instituto encaja del todo con tus respuestas, y eso también es un dato útil. Abajo te dejamos otras ideas para explorar.</p>`:otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
+    </div>
+
+    <div class="frame">
+      <h3>MÁS ALLÁ DEL INSTITUTO</h3>
+      ${(()=>{const sec=n[rank[1]]>0?rank[1]:null;
+        const lista=sec?[...EXTERNAS[rank[0]].slice(0,3),...EXTERNAS[sec].slice(0,2)]:EXTERNAS[rank[0]];
+        return `<p>${sec?`Tus intereses más fuertes son <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong> y <strong>${esc(TIPOS[sec].clase.toLowerCase())}</strong>`:`Tu interés más fuerte es claramente <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong>`}. A personas con intereses parecidos suelen atraerles carreras como estas:</p>
+      <div class="ext">${lista.map(c=>`<span>${esc(c)}</span>`).join("")}</div>`})()}
+      <p class="small"><strong>Esto NO es un test vocacional.</strong> Es un juego de 12 preguntas basado en el modelo de intereses de John Holland y en los códigos de ocupaciones de O*NET. Tomalo como ideas para investigar, no como una recomendación. Para decidir qué estudiar, consultá con un orientador vocacional o con el gabinete de tu escuela.</p>
     </div>
 
     <div class="actions"><button class="btn" id="again">▶ Siguiente jugador</button><span class="idle" id="idle"></span></div>`;
