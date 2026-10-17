@@ -133,11 +133,28 @@ h3{font-family:var(--body);font-weight:700;font-size:clamp(17px,2.4vw,21px);lett
 .coin{font-size:clamp(13px,2vw,16px);color:var(--green)}
 .btn.go{font-size:clamp(18px,3.6vw,28px);padding:clamp(22px,3.4vw,32px) clamp(32px,6vw,64px);box-shadow:0 8px 0 #B38F14}
 .btn.go:active{transform:translateY(7px);box-shadow:0 1px 0 #B38F14}
+/* ---------- inicio con QR + resultado para llevar ---------- */
+.opciones{display:grid;grid-template-columns:1fr 1fr;gap:22px;width:100%;align-items:stretch}
+@media (max-width:720px){.opciones{grid-template-columns:1fr}}
+.opcion{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px 18px;background:var(--dark);box-shadow:inset 0 0 0 3px var(--line);min-width:0}
+.opcion .tag{font-family:var(--pixel);font-size:12px;letter-spacing:.06em;color:var(--cyan)}
+.opcion p{font-size:19px;margin:0;max-width:26ch}
+.qrbox{background:#fff;padding:14px;line-height:0;box-shadow:0 0 0 4px var(--yellow),0 0 0 8px var(--dark)}
+.qrbox img,.qrbox canvas{display:block;width:clamp(180px,22vw,240px);height:auto;image-rendering:pixelated}
+.qrbox.sm img,.qrbox.sm canvas{width:clamp(150px,18vw,190px)}
+.url{font-family:var(--pixel);font-size:11px;color:var(--yellow);overflow-wrap:anywhere;line-height:1.7}
+.qrfail{font-family:var(--body);font-weight:700;font-size:17px;color:var(--dark);line-height:1.4;max-width:220px;padding:6px}
+.llevar{display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:center;width:100%}
+.llevar .txt{display:flex;flex-direction:column;gap:12px;align-items:center;max-width:30ch}
+.btn.dl{background:var(--green);box-shadow:0 6px 0 #2E9A53}
+.btn.dl:active{box-shadow:0 1px 0 #2E9A53}
+.dlmsg{font-family:var(--pixel);font-size:11px;color:var(--green);min-height:1.7em;width:100%;text-align:center}
 </style>
 </head>
 <body>
 <main class="wrap" id="app" aria-live="polite"></main>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 /* Modelo de intereses de Holland (RIASEC), el que usa el O*NET Interest Profiler.
    Cada opción de cada situación suma a un tipo, sin decirlo en pantalla.
@@ -274,20 +291,50 @@ function hud(){
 }
 function bindMute(){const m=document.getElementById("mute"); if(m) m.onclick=()=>{mute=!mute; m.textContent=mute?"SONIDO: NO":"SONIDO: SÍ"; m.setAttribute("aria-pressed",mute)}}
 
+/* ---------- modos ----------
+   Stand (sin #): la PC del stand muestra el QR y también se puede jugar ahí.
+   #jugar: se abrió desde el QR en un celular. #r=…: resultado llevado al celular desde la PC. */
+const URL_TEST="https://camilafrontera.github.io/cuestionarioGamificado/";
+function baseURL(){
+  try{ if(/^https?:$/.test(location.protocol) && !/claude/i.test(location.hostname)) return location.origin+location.pathname; }catch(e){}
+  return URL_TEST;
+}
+const PERSONAL=/^#(jugar|r=)/.test(location.hash);
+function qr(el,texto,tam){
+  if(!el) return;
+  try{ new QRCode(el,{text:texto,width:tam,height:tam,colorDark:"#0B0618",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M}); el.title=""; }
+  catch(e){ el.innerHTML=`<span class="qrfail">Sin conexión para dibujar el QR. Entrá a:<br>${esc(texto.replace(/^https?:\/\//,"").replace(/#.*$/,""))}</span>`; }
+}
+
 function inicio(){
   clearInterval(idleTick); idleReset=null; i=0; elegidas=[]; pts=0;
   ordenOpc=SITUACIONES.map(s=>mezclar(s.o));
-  const n=jugadores(false);
+  const n=PERSONAL?0:jugadores(false);
+  const link=baseURL()+"#jugar";
+  const corto=link.replace(/^https?:\/\//,"").replace(/#.*$/,"").replace(/\/$/,"");
   app.innerHTML=`
     ${hud()}
     <div class="frame">
       <span class="px small">ISFDyT N° 125 · NOCHE DE LOS INSTITUTOS</span>
       <h1>¿El software es lo tuyo?</h1>
       <p>12 niveles, 12 situaciones. No hay respuestas correctas ni incorrectas: elegí lo que harías vos de verdad, no lo que quedaría mejor. Al final descubrís tu clase de jugador y qué carreras del instituto van con vos.</p>
-      <div class="start"><span class="px blink coin">INSERT COIN: GRATIS</span><button class="btn go" id="go">▶ Presiona start</button></div>
+      ${PERSONAL?`<div class="start"><span class="px blink coin">INSERT COIN: GRATIS</span><button class="btn go" id="go">▶ Presiona start</button></div>`:`
+      <div class="opciones">
+        <div class="opcion">
+          <span class="tag">OPCIÓN 1 · DESDE TU CELU</span>
+          <div class="qrbox" id="qr" role="img" aria-label="Código QR para abrir el test en el celular"></div>
+          <p>Escaneá con la cámara y jugá desde tu celular. Pueden jugar varios a la vez.</p>
+          <span class="url">${esc(corto)}</span>
+        </div>
+        <div class="opcion">
+          <span class="tag">OPCIÓN 2 · EN ESTA PANTALLA</span>
+          <div class="start"><span class="px blink coin">INSERT COIN: GRATIS</span><button class="btn go" id="go">▶ Presiona start</button></div>
+        </div>
+      </div>`}
       ${n?`<span class="px small">JUGADORES ESTA NOCHE: <span style="color:var(--yellow)">${pad(n,3)}</span></span>`:""}
     </div>`;
   bindMute();
+  if(!PERSONAL) qr(document.getElementById("qr"),link,240);
   document.getElementById("go").onclick=()=>{melodia([523,659,784,1046]); setTimeout(pregunta,300)};
 }
 
@@ -345,20 +392,39 @@ function resultado(){
   /* puntaje relativo: cuántas veces elegiste cada tipo sobre cuántas veces apareció, comparado con tu tipo más fuerte */
   const rel=Object.fromEntries(ORDEN.map(t=>[t,raw[t]/APARICIONES[t]]));
   const maxRel=Math.max(...Object.values(rel))||1;
-  const n=Object.fromEntries(ORDEN.map(t=>[t,rel[t]/maxRel]));
+  /* redondeado a centésimos para que el resultado llevado al celu (#r=) dé exactamente igual */
+  const n=Object.fromEntries(ORDEN.map(t=>[t,Math.round(rel[t]/maxRel*100)/100]));
+  const nro=PERSONAL?0:jugadores(true);
+  const hoy=new Date(), fecha=`${hoy.getFullYear()}${pad(hoy.getMonth()+1,2)}${pad(hoy.getDate(),2)}`;
+  pantallaResultado({n,nro,pts,fecha,link:false});
+}
+
+/* todo lo que se muestra (y se descarga) sale del perfil n */
+function calcular(n){
   const rank=[...ORDEN].sort((a,b)=>n[b]-n[a]||ORDEN.indexOf(a)-ORDEN.indexOf(b));
   const top=rank[0], codigo=rank.slice(0,3).join("");
   const lista=CARRERAS.map(c=>({...c,p:compat(n,c.code)}));
-  const soft=lista[0];
-  const otras=lista.slice(1).sort((a,b)=>b.p-a.p);
-  const paso=soft.p>=UMBRAL;
-  const nro=jugadores(true);
-  melodia(paso?[523,659,784,1046,1318]:[784,659,523,659,784]);
+  const soft=lista[0], otras=lista.slice(1).sort((a,b)=>b.p-a.p);
+  const sec=n[rank[1]]>0?rank[1]:null;
+  const ext=sec?[...EXTERNAS[rank[0]].slice(0,3),...EXTERNAS[sec].slice(0,2)]:EXTERNAS[rank[0]];
+  return {rank,top,codigo,soft,otras,sec,ext,paso:soft.p>=UMBRAL};
+}
+const pct=p=>p<5?"<5":String(p);
+const fechaTxt=f=>f&&f.length===8?`${f.slice(6)}/${f.slice(4,6)}/${f.slice(0,4)}`:"";
+let ULTIMO=null;
+
+function pantallaResultado(d){
+  const {n,nro}=d, R=calcular(n), {rank,top,codigo,soft,otras,sec,ext,paso}=R;
+  ULTIMO={...d,...R};
+  if(!d.link) melodia(paso?[523,659,784,1046,1318]:[784,659,523,659,784]);
+  const total=d.pts+soft.p*10;
+  const linkR=baseURL()+"#r="+ORDEN.map(t=>Math.round(n[t]*100)).join(".")+"-"+nro+"-"+total+"-"+d.fecha;
+  const kiosco=!PERSONAL;
 
   app.innerHTML=`
-    <div class="hud"><span>JUGADOR <b>1</b></span><span>PTS <b>${pad(pts+soft.p*10,6)}</b></span><span>JUGADOR N° <b>${pad(nro,3)}</b></span><button id="mute" aria-pressed="${mute}">${mute?"SONIDO: NO":"SONIDO: SÍ"}</button></div>
+    <div class="hud"><span>JUGADOR <b>1</b></span><span>PTS <b>${pad(total,6)}</b></span>${nro?`<span>JUGADOR N° <b>${pad(nro,3)}</b></span>`:""}<button id="mute" aria-pressed="${mute}">${mute?"SONIDO: NO":"SONIDO: SÍ"}</button></div>
     <div class="frame">
-      <span class="px blink" style="color:var(--green);font-size:14px">¡NIVEL COMPLETADO!</span>
+      <span class="px blink" style="color:var(--green);font-size:14px">${d.link?"TU RESULTADO":"¡NIVEL COMPLETADO!"}</span>
       <h3>TU CLASE DE JUGADOR</h3>
       <h2>${esc(TIPOS[top].clase)}</h2>
       <p>Lo tuyo es ${esc(TIPOS[top].desc)}. <span class="muted">Tu código de intereses es <strong>${codigo}</strong>.</span></p>
@@ -369,14 +435,14 @@ function resultado(){
 
     <div class="frame">
       <h3>COMPATIBILIDAD CON DESARROLLO DE SOFTWARE</h3>
-      <span class="big">${soft.p<5?"&lt;5":soft.p}%</span>
+      <span class="big">${esc(pct(soft.p))}%</span>
       <p>${paso?"Tus intereses se parecen a los de quienes trabajan desarrollando software.":"No es tu perfil más fuerte, pero en un equipo de software hay lugar para gente muy distinta."}</p>
       <p><strong>Tu lugar en el equipo:</strong> ${esc(ROL_SOFT[top])}</p>
     </div>
 
     <div class="ticket ${paso?"":"guest"}" role="note">
       <span class="t">${paso?"★ PASE AL SALÓN DESBLOQUEADO ★":"PASE DE INVITADO AL SALÓN"}</span>
-      <span class="num">JUGADOR N° ${pad(nro,3)} · CLASE ${TIPOS[top].clase.toUpperCase()}</span>
+      <span class="num">${nro?`JUGADOR N° ${pad(nro,3)} · `:""}CLASE ${TIPOS[top].clase.toUpperCase()}</span>
       <p>${paso?"Mostrale esta pantalla a alguien del stand: te esperamos adentro para probar lo que hacemos y llevarte tu premio.":"Igual estás invitado a pasar: vení a ver lo que hacemos y llevate tu premio. Nadie se va con las manos vacías."}</p>
     </div>
 
@@ -384,24 +450,109 @@ function resultado(){
       <h3>OTRAS MISIONES EN EL INSTITUTO</h3>
       <p class="small">Tu compatibilidad con cada carrera, según el mismo modelo de intereses.</p>
       <div class="careers">
-        ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${c.p<5?"&lt;5":c.p}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
+        ${[soft,...otras].map(c=>`<div class="career ${c.id==="soft"?"ours":""}"><span class="n">${esc(c.n)}${c.id==="soft"?" · este stand":""}</span><span class="pct">${esc(pct(c.p))}%</span><span class="why">${esc(c.why)}</span></div>`).join("")}
       </div>
       ${Math.max(soft.p,otras[0].p)<40?`<p>Ninguna carrera del instituto encaja del todo con tus respuestas, y eso también es un dato útil. Abajo te dejamos otras ideas para explorar.</p>`:otras[0].p>soft.p?`<p>Tu mejor resultado es <strong>${esc(otras[0].n)}</strong>. ¡Pasá también por su stand!</p>`:""}
     </div>
 
     <div class="frame">
       <h3>MÁS ALLÁ DEL INSTITUTO</h3>
-      ${(()=>{const sec=n[rank[1]]>0?rank[1]:null;
-        const lista=sec?[...EXTERNAS[rank[0]].slice(0,3),...EXTERNAS[sec].slice(0,2)]:EXTERNAS[rank[0]];
-        return `<p>${sec?`Tus intereses más fuertes son <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong> y <strong>${esc(TIPOS[sec].clase.toLowerCase())}</strong>`:`Tu interés más fuerte es claramente <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong>`}. A personas con intereses parecidos suelen atraerles carreras como estas:</p>
-      <div class="ext">${lista.map(c=>`<span>${esc(c)}</span>`).join("")}</div>`})()}
+      <p>${sec?`Tus intereses más fuertes son <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong> y <strong>${esc(TIPOS[sec].clase.toLowerCase())}</strong>`:`Tu interés más fuerte es claramente <strong>${esc(TIPOS[rank[0]].clase.toLowerCase())}</strong>`}. A personas con intereses parecidos suelen atraerles carreras como estas:</p>
+      <div class="ext">${ext.map(c=>`<span>${esc(c)}</span>`).join("")}</div>
       <p class="small"><strong>Esto NO es un test vocacional.</strong> Es un juego de 12 preguntas basado en el modelo de intereses de John Holland y en los códigos de ocupaciones de O*NET. Tomalo como ideas para investigar, no como una recomendación. Para decidir qué estudiar, consultá con un orientador vocacional o con el gabinete de tu escuela.</p>
     </div>
 
-    <div class="actions"><button class="btn" id="again">▶ Siguiente jugador</button><span class="idle" id="idle"></span></div>`;
+    <div class="frame">
+      <h3>LLEVATE TU RESULTADO</h3>
+      ${kiosco?`<div class="llevar">
+        <div class="qrbox sm" id="qrRes" role="img" aria-label="Código QR para abrir este resultado en tu celular"></div>
+        <div class="txt"><p>Escaneá este QR con tu celu: se abre tu resultado y lo descargás ahí.</p></div>
+      </div>`:`<p>Guardalo como imagen en tu celular para mostrarlo o compartirlo.</p>`}
+      <div class="actions"><button class="btn dl" id="dl">⬇ Descargar resultado</button></div>
+      <span class="dlmsg" id="dlmsg" role="status"></span>
+    </div>
+
+    <div class="actions"><button class="btn" id="again">${kiosco?"▶ Siguiente jugador":"▶ Jugar de nuevo"}</button><span class="idle" id="idle"></span></div>`;
   bindMute();
-  document.getElementById("again").onclick=()=>{beep(784);inicio()};
-  armarIdle();
+  if(kiosco) qr(document.getElementById("qrRes"),linkR,190);
+  document.getElementById("dl").onclick=descargar;
+  document.getElementById("again").onclick=()=>{
+    beep(784);
+    if(d.link){ try{history.replaceState(null,"",location.pathname+location.search+"#jugar")}catch(e){} }
+    inicio();
+  };
+  if(kiosco) armarIdle();
+}
+
+/* ---------- imagen descargable (PNG 1080 px, estilo arcade) ---------- */
+async function descargar(){
+  const msg=document.getElementById("dlmsg"), btn=document.getElementById("dl");
+  if(!ULTIMO) return;
+  btn.disabled=true; msg.textContent="GENERANDO IMAGEN…"; beep(880);
+  try{
+    try{ await Promise.all([document.fonts.load('32px "Press Start 2P"'),document.fonts.load('700 32px "Atkinson Hyperlegible"'),document.fonts.load('32px "Atkinson Hyperlegible"')]); }catch(e){}
+    const cv=dibujar(ULTIMO);
+    const blob=await new Promise((ok,ko)=>cv.toBlob(b=>b?ok(b):ko(new Error("blob")),"image/png"));
+    const nombre=`resultado-test${ULTIMO.nro?"-"+pad(ULTIMO.nro,3):""}-${TIPOS[ULTIMO.top].clase.toLowerCase()}.png`;
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=nombre; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    msg.textContent="¡LISTO! REVISÁ TUS DESCARGAS"; melodia([784,1046]);
+  }catch(e){ msg.textContent="NO SE PUDO DESCARGAR. SACALE UNA FOTO A LA PANTALLA"; }
+  btn.disabled=false;
+}
+function dibujar(r){
+  const W=1080, H=1740, M=70, c=document.createElement("canvas"); c.width=W; c.height=H;
+  const g=c.getContext("2d");
+  const PX='"Press Start 2P", "Courier New", monospace', BD='"Atkinson Hyperlegible", "Segoe UI", sans-serif';
+  const col={bg:"#170D2E",screen:"#22164A",ink:"#F4F0FF",muted:"#D6CEF2",line:"#3D2E78",cyan:"#3EE6FF",yellow:"#FFD23F",pink:"#FF4FA3",green:"#5CF28B",dark:"#0B0618"};
+  const txt=(t,x,y,font,color,align="left")=>{g.font=font; g.fillStyle=color; g.textAlign=align; g.textBaseline="alphabetic"; g.fillText(t,x,y)};
+  const wrap=(t,x,y,max,lh,font,color,align="left")=>{
+    g.font=font; const pal=t.split(" "); let lin="", yy=y;
+    pal.forEach(w=>{const prueba=lin?lin+" "+w:w; if(g.measureText(prueba).width>max&&lin){txt(lin,x,yy,font,color,align); lin=w; yy+=lh} else lin=prueba});
+    if(lin){txt(lin,x,yy,font,color,align); yy+=lh} return yy;
+  };
+  const marco=(x,y,w,h)=>{g.fillStyle=col.dark; g.fillRect(x-4,y-4,w+8,h+16); g.fillStyle=col.line; g.fillRect(x-4,y-4,w+8,h+8); g.fillStyle=col.screen; g.fillRect(x,y,w,h)};
+  /* fondo con scanlines */
+  g.fillStyle=col.bg; g.fillRect(0,0,W,H);
+  g.fillStyle="rgba(0,0,0,.10)"; for(let y=0;y<H;y+=4) g.fillRect(0,y,W,2);
+  /* cabecera */
+  txt("ISFDyT N° 125 · NOCHE DEL INSTITUTO",W/2,96,`18px ${PX}`,col.muted,"center");
+  txt("¿El software",W/2,170,`44px ${PX}`,col.pink,"center"); txt("¿El software",W/2-4,166,`44px ${PX}`,col.yellow,"center");
+  txt("es lo tuyo?",W/2,236,`44px ${PX}`,col.pink,"center"); txt("es lo tuyo?",W/2-4,232,`44px ${PX}`,col.yellow,"center");
+  /* clase + barras */
+  let y=280; marco(M,y,W-2*M,470);
+  txt("TU CLASE DE JUGADOR",W/2,y+62,`20px ${PX}`,col.cyan,"center");
+  txt(TIPOS[r.top].clase,W/2,y+138,`700 68px ${BD}`,col.ink,"center");
+  txt(`Código de intereses: ${r.codigo}`,W/2,y+188,`28px ${BD}`,col.muted,"center");
+  ORDEN.forEach((t,k)=>{
+    const yy=y+236+k*38, on=Math.round(r.n[t]*8), x0=M+90;
+    txt(TIPOS[t].clase,x0,yy+22,`${t===r.top?"700 ":""}26px ${BD}`,t===r.top?col.yellow:col.ink);
+    for(let s=0;s<8;s++){ g.fillStyle=s<on?(t===r.top?col.yellow:col.cyan):col.line; g.fillRect(x0+280+s*60,yy,52,24) }
+  });
+  /* software */
+  y=790; marco(M,y,W-2*M,250);
+  txt("COMPATIBILIDAD CON DESARROLLO DE SOFTWARE",W/2,y+58,`17px ${PX}`,col.cyan,"center");
+  const big=pct(r.soft.p)+"%";
+  txt(big,W/2+6,y+168,`88px ${PX}`,col.pink,"center"); txt(big,W/2,y+162,`88px ${PX}`,col.yellow,"center");
+  txt(r.paso?"★ PASE AL SALÓN DESBLOQUEADO ★":"PASE DE INVITADO AL SALÓN",W/2,y+218,`18px ${PX}`,r.paso?col.green:col.cyan,"center");
+  /* otras carreras */
+  y=1080; marco(M,y,W-2*M,250);
+  txt("OTRAS MISIONES EN EL INSTITUTO",W/2,y+56,`18px ${PX}`,col.cyan,"center");
+  r.otras.slice(0,3).forEach((c,k)=>{
+    const yy=y+112+k*50;
+    txt(c.n,M+50,yy,`700 30px ${BD}`,col.ink);
+    txt(pct(c.p)+"%",W-M-50,yy,`24px ${PX}`,col.cyan,"right");
+  });
+  /* externas */
+  y=1370; marco(M,y,W-2*M,200);
+  txt("IDEAS MÁS ALLÁ DEL INSTITUTO",W/2,y+56,`18px ${PX}`,col.cyan,"center");
+  wrap(r.ext.join(" · "),W/2,y+108,W-2*M-80,40,`700 28px ${BD}`,col.ink,"center");
+  /* pie */
+  wrap("Esto NO es un test vocacional: es un juego basado en el modelo de intereses de Holland (O*NET). Tomalo como ideas para investigar.",W/2,1630,W-2*M,30,`22px ${BD}`,col.muted,"center");
+  const pie=[r.nro?`JUGADOR N° ${pad(r.nro,3)}`:"",fechaTxt(r.fecha)].filter(Boolean).join(" · ");
+  if(pie) txt(pie,W/2,1706,`14px ${PX}`,col.yellow,"center");
+  return c;
 }
 
 /* En el stand: si nadie toca la pantalla del resultado, vuelve sola al inicio */
@@ -414,7 +565,20 @@ function armarIdle(){
 }
 document.addEventListener("pointerdown",()=>{if(idleReset) idleReset()});
 
-inicio();
+/* arranque: #r=… abre un resultado traído desde la PC del stand */
+(function(){
+  const m=location.hash.match(/^#r=([\d.]+)-(\d+)-(\d+)-(\d{8})$/);
+  if(m){
+    const v=m[1].split(".").map(Number);
+    if(v.length===6&&v.every(x=>x>=0&&x<=100)&&Math.max(...v)>0){
+      const n=Object.fromEntries(ORDEN.map((t,k)=>[t,v[k]/100]));
+      const tot=+m[3], nro=+m[2];
+      pantallaResultado({n,nro,pts:Math.max(0,tot-compat(n,CARRERAS[0].code)*10),fecha:m[4],link:true});
+      return;
+    }
+  }
+  inicio();
+})();
 </script>
 </body>
 </html>
